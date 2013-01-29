@@ -15,10 +15,16 @@
  */
 package com.mclinic.plugin;
 
+import java.util.UUID;
+
 import android.util.Log;
+import com.mclinic.api.model.User;
 import com.mclinic.api.module.MuzimaModule;
 import com.mclinic.api.service.AdministrativeService;
+import com.mclinic.api.service.UserService;
 import com.mclinic.search.api.Context;
+import com.mclinic.search.api.util.StringUtil;
+import com.mclinic.util.DigestUtils;
 import com.mclinic.util.FileUtil;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.api.CordovaInterface;
@@ -36,30 +42,40 @@ public abstract class MuzimaPlugin extends CordovaPlugin {
 
     protected Boolean initialized = Boolean.FALSE;
 
-    /**
-     * @param cordova The context of the main Activity.
-     * @param webView The associated CordovaWebView.
-     */
-    @Override
-    public void initialize(final CordovaInterface cordova, final CordovaWebView webView) {
-        super.initialize(cordova, webView);
-
+    protected void initialize(final String server, final String username, final String password) {
         if (!initialized) {
             Log.i(TAG, "Initializing internal structure of the plugins.");
-
             if (FileUtil.storageReady()) {
                 MuzimaModule muzimaModule = new MuzimaModule(lucenePath, defaultKey);
-                // TODO: this should come from some sort of configuration on the ui side.
-                muzimaModule.setServer("http://140.182.6.88:8081/openmrs-standalone/");
-                muzimaModule.setUsername("admin");
-                muzimaModule.setPassword("test");
+                muzimaModule.setServer(server);
+                muzimaModule.setUsername(username);
+                muzimaModule.setPassword(password);
                 Context.initialize(muzimaModule);
 
                 AdministrativeService administrativeService = Context.getInstance(AdministrativeService.class);
                 administrativeService.initializeRepository(configurationPath);
-
                 Log.i(TAG, "Internal structure of plugins is initialized.");
-                initialized = Boolean.TRUE;
+                // initialize with the current user
+                // TODO: need to make sure the timeout is short when performing any download this!
+                administrativeService.downloadUsers(username);
+                // validate the user
+                UserService userService = Context.getInstance(UserService.class);
+                User user = userService.getUserByUsername(username);
+                if (user != null) {
+                    if (StringUtil.isEmpty(user.getSalt()) && StringUtil.isEmpty(user.getPassword())) {
+                        String salt = UUID.randomUUID().toString();
+                        String hashedPassword = DigestUtils.generateChecksum(password + ":" + salt);
+                        user.setSalt(salt);
+                        user.setPassword(hashedPassword);
+                        userService.updateUser(user);
+                        initialized = Boolean.TRUE;
+                    } else {
+                        String hashedPassword = DigestUtils.generateChecksum(password + ":" + user.getSalt());
+                        if (StringUtil.equals(hashedPassword, user.getPassword()))
+                            initialized = Boolean.TRUE;
+                        userService.deleteUser(user);
+                    }
+                }
             }
         }
     }

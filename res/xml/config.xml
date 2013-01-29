@@ -57,6 +57,7 @@
     <plugin name="CohortPlugin" value="com.mclinic.plugin.CohortPlugin"/>
     <plugin name="PatientPlugin" value="com.mclinic.plugin.PatientPlugin"/>
     <plugin name="ObservationPlugin" value="com.mclinic.plugin.ObservationPlugin"/>
+    <plugin name="UserPlugin" value="com.mclinic.plugin.UserPlugin"/>
 </plugins>
 </cordova>
 
