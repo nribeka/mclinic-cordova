@@ -36,102 +36,54 @@
 <script type="text/javascript" src="js/amplify.js"></script>
 <script type="text/javascript" src="js/jsrender.js"></script>
 <script type="text/javascript" src="js/cordova-2.2.0.js"></script>
-<script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript" src="js/muzima.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript">
-    var searchPatients = (function ($, undefined) {
-        var search = {};
 
-        search.init = function () {
-            $("#search").on("click", function () {
-                search.renderResult();
-            });
-
-            amplify.subscribe("result.updated", function (results) {
-                search.displayResults(results);
-            });
-
-            amplify.subscribe("result.updated", function (results) {
-                console.log("Search result counter: " + results.length);
-            });
-        };
-
-        search.renderResult = function () {
-            $.mobile.loading("show");
-            search.doSearch();
-        };
-
-        search.doSearch = function () {
-            if (typeof navigator.accelerometer != 'undefined') {
-                navigator.accelerometer.getCurrentAcceleration(
-                        function (acceleration) {
-                            alert('Accessing Accelerometer: ' +
-                                    'Acceleration X: ' + acceleration.x + '\n' +
-                                    'Acceleration Y: ' + acceleration.y + '\n' +
-                                    'Acceleration Z: ' + acceleration.z + '\n' +
-                                    'Timestamp: ' + acceleration.timestamp + '\n');
-
-                        },
-                        function () {
-                            console.log("Unable to read accelerometer values.");
-                        }
-                );
-            }
-
-            if (typeof navigator.geolocation != 'undefined') {
-                navigator.geolocation.getCurrentPosition(
-                        function (position) {
-                            alert('Accessing GPS:' +
-                                    'Latitude: ' + position.coords.latitude + '\n' +
-                                    'Longitude: ' + position.coords.longitude + '\n' +
-                                    'Altitude: ' + position.coords.altitude + '\n' +
-                                    'Accuracy: ' + position.coords.accuracy + '\n' +
-                                    'Altitude Accuracy: ' + position.coords.altitudeAccuracy + '\n' +
-                                    'Heading: ' + position.coords.heading + '\n' +
-                                    'Speed: ' + position.coords.speed + '\n' +
-                                    'Timestamp: ' + position.timestamp);
-
-                        },
-                        function () {
-                            console.log("Unable to read geolocation values.");
-                        }
-                );
-            }
-
-            // we do the cordova call here.
-            var data = [
-                {patientId: 1, givenName: "Testarius", middleName: "Paul", familyName: "Kungu",
-                    gender: "M", birthdate: "12/12/2012", identifier: "999-3"},
-                {patientId: 2, givenName: "Testarius", middleName: "Ambote", familyName: "Indakasi",
-                    gender: "F", birthdate: "11/11/2011", identifier: "99-2"}
-            ];
-
-            amplify.publish("result.updated", data);
-            $.mobile.loading("hide");
-            return data;
-        };
-
-        search.displayResults = function (results) {
-            var cohort = $("#cohort-placeholder");
-            cohort.empty();
-
-            var template = $("#cohort-data");
-            var data = template.render(results);
-
-            cohort.html(data);
-            cohort.listview("refresh");
-
-        };
-
-        return search;
-
-    }(jQuery));
-
+    // register for a device ready listener (cordova)
     document.addEventListener("deviceready", onDeviceReady, false);
     function onDeviceReady() {
-        searchPatients.init();
         // registering handler when user press the back button
         document.addEventListener("backbutton", onBackKeyDown, false);
+
+        searchPatients.init();
+
+        $("#download").click(function() {
+            var uuid = session.getValue(COHORT_UUID);
+            alert("cohort uuid: " + uuid);
+            adminService.downloadAllPatients(uuid,
+                    function(results) {
+                        var cohort = $("#patients-placeholder");
+                        cohort.empty();
+
+                        var template = $("#patient-data");
+                        var data = template.render(results);
+
+                        cohort.html(data);
+                        cohort.listview("refresh");
+                    }
+            );
+        });
+
+        $("#refresh").click(function() {
+            patientService.getAllPatients(
+                    function(results) {
+                        var cohort = $("#patients-placeholder");
+                        cohort.empty();
+
+                        var template = $("#patient-data");
+                        var data = template.render(results);
+
+                        cohort.html(data);
+                        cohort.listview("refresh");
+                    }
+            );
+        });
+
+        $(".patient").click(function() {
+            var uuid = $(this).attr("uuid");
+            session.putValue(PATIENT_UUID, uuid);
+        })
     }
 
     function onBackKeyDown(event) {
@@ -141,38 +93,70 @@
         navigator.app.exitApp();
     }
 
-    $(document).ready(function () {
-        // putting it here for testing in browser.
-        searchPatients.init();
-    })
+    var searchPatients = (function ($) {
+        var search = {};
+
+        search.init = function () {
+            $("#search").on("click", function () {
+                search.renderResult();
+            });
+        };
+
+        search.renderResult = function () {
+            $.mobile.loading("show");
+            search.doSearch();
+        };
+
+        search.doSearch = function () {
+            var partialName = $("#term").attr("value");
+            patientService.getPatientsByName(partialName, search.displayResults());
+            $.mobile.loading("hide");
+            return data;
+        };
+
+        search.displayResults = function (results) {
+            var cohort = $("#patients-placeholder");
+            cohort.empty();
+
+            var template = $("#patient-data");
+            var data = template.render(results);
+
+            cohort.html(data);
+            cohort.listview("refresh");
+        };
+
+        return search;
+
+    }(jQuery));
 
 </script>
 
 <div data-role="content">
     <div data-role="page" id="search-page">
 
-        <div data-role="navbar">
-            <ul>
-                <li><a href="index.html" rel="external" data-icon="home">Home</a></li>
-                <li><a href="profile.html" rel="external" data-icon="gear">My Profile</a></li>
-                <li><a href="search.html" rel="external" data-icon="search" class="ui-btn-active">Search Patient</a>
-                </li>
-            </ul>
+        <div data-role="footer" class="ui-bar">
+            <a href="cohort.html" data-role="button" data-icon="back">Cohort</a>
         </div>
+
 
         <div data-role="content">
             <div data-role="fieldcontain">
                 <input type="text" name="term" id="term" value=""/>
                 <input type="button" name="search" id="search" value="Search" data-inline="true"/>
             </div>
-            <ul data-role="listview" data-inset="true" id="cohort-placeholder"></ul>
+            <ul data-role="listview" data-inset="true" id="patients-placeholder"></ul>
+        </div>
+
+        <div data-role="footer" class="ui-bar">
+            <a href="#" data-role="button" data-icon="arrow-d" id="download">Download</a>
+            <a href="#" data-role="button" data-icon="refresh" id="refresh">Refresh</a>
         </div>
     </div>
 </div>
 
-<script id="cohort-data" type="text/x-jsrender">
-    <li data-messageId="{{>patientId}}">
-        <h4><a href="patient.html" rel="external">{{>givenName}} {{>middleName}} {{>familyName}}</a></h4>
+<script id="patient-data" type="text/x-jsrender">
+    <li data-messageId="{{>uuid}}">
+        <h4><a href="patient.html" rel="external" class="patient" uuid="{{>uuid}}">{{>name}}</a></h4>
         {{if gender=='M'}}
         <img src="img/male-small.png" class="border"/>
         {{else}}

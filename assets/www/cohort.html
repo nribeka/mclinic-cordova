@@ -40,86 +40,79 @@
 <script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript">
 
-    var person = [
-        {
-            systemId: "999KT-3",
-            givenName: "Testarius",
-            familyName: "Kungu",
-            middleName: "Paul",
-            gender: "M",
-            birth: "04/16/1984"
-        }
-    ];
-
-    function displayResults() {
-        var placeholder = $("#profile-placeholder");
-        placeholder.empty();
-
-        var template = $("#profile-data");
-        var data = template.render(person);
-
-        placeholder.html(data);
-        placeholder.listview("refresh");
-
-    }
-
-    $(document).ready(function () {
-        displayResults()
-    });
-
     // register for a device ready listener (cordova)
     document.addEventListener("deviceready", onDeviceReady, false);
     function onDeviceReady() {
         // registering handler when user press the back button
         document.addEventListener("backbutton", onBackKeyDown, false);
+
+        $("#download").click(function () {
+            $.mobile.loading("show");
+            adminService.downloadAllCohorts(
+                    function success(results) {
+                        renderResults(results);
+                        $.mobile.loading("hide");
+                    });
+        });
+
+        $("#refresh").click(function () {
+            $.mobile.loading("show");
+            cohortService.getAllCohorts(
+                    function success(results) {
+                        renderResults(results);
+                        $.mobile.loading("hide");
+                    });
+        });
     }
+
+    function renderResults(results) {
+        var cohort = $("#cohorts-placeholder");
+        cohort.empty();
+
+        var template = $("#cohort-data");
+        var data = template.render(results);
+
+        cohort.html(data);
+        cohort.listview("refresh");
+    }
+
+    function save(uuid) {
+        alert("assigning uuid: " + uuid);
+        session.putValue(COHORT_UUID, uuid);
+    }
+
     function onBackKeyDown(event) {
         // exit the app if the user is on this page!
         event.preventDefault();
         // call the exit app (cordova)
         navigator.app.exitApp();
     }
+
 </script>
 
 <div data-role="content">
-
-    <div data-role="page" id="profile-page">
+    <div data-role="page" id="cohort-page">
 
         <div data-role="navbar">
             <ul>
                 <li><a href="index.html" rel="external" data-icon="home">Home</a></li>
-                <li><a href="profile.html" rel="external" data-icon="gear" class="ui-btn-active">My Profile</a></li>
-                <li><a href="search.html" rel="external" data-icon="search">Search Patient</a></li>
+                <li><a href="cohort.html" rel="external" data-icon="gear" class="ui-btn-active">Cohort</a></li>
             </ul>
         </div>
 
         <div data-role="content">
-            <ul data-role="listview" data-inset="true" id="profile-placeholder"></ul>
+            <ul data-role="listview" data-inset="true" id="cohorts-placeholder"></ul>
+        </div>
+        <div data-role="footer" class="ui-bar">
+            <a href="#" data-role="button" data-icon="arrow-d" id="download">Download</a>
+            <a href="#" data-role="button" data-icon="refresh" id="refresh">Refresh</a>
         </div>
     </div>
 </div>
 
-<script id="profile-data" type="text/x-jsrender">
-    <li>
-        <p></p>
-        {{if gender=='M'}}
-        <img src="img/male-small.png" class="border"/>
-        {{else}}
-        <img src="img/female-small.png" class="border"/>
-        {{/if}}
-    </li>
-    <li>
-        <p>Name</p>
-
-        <h3>{{>givenName}} {{>middleName}} {{>familyName}}</h3>
-    </li>
-    <li>
-        <p>Identifier</p>
-        <h4>{{>systemId}}</h4>
-    </li>
-    <li>
-        <p>Date of Birth</p>
-        <h4>{{>birth}}</h4>
+<script id="cohort-data" type="text/x-jsrender">
+    <li data-messageId="{{>uuid}}">
+        <h4><a href="search.html" rel="external" onclick="save({{>uuid}});">{{>name}}</a></h4>
     </li>
 </script>
 

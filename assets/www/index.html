@@ -30,8 +30,8 @@
 <script type="text/javascript" src="js/amplify.js"></script>
 <script type="text/javascript" src="js/jsrender.js"></script>
 <script type="text/javascript" src="js/cordova-2.2.0.js"></script>
-<script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript" src="js/muzima.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript">
 
     // register for a device ready listener (cordova)
@@ -39,6 +39,15 @@
     function onDeviceReady() {
         // registering handler when user press the back button
         document.addEventListener("backbutton", onBackKeyDown, false);
+
+        $.mobile.loading("show");
+        var username = session.getValue(SESSION_USERNAME);
+        userService.getUserByUsername(username,
+                function(data) {
+                    $("#user").html(data.name + " (username: " + data.username + ")");
+                    $.mobile.loading("hide");
+                }
+        );
     }
     function onBackKeyDown(event) {
         // exit the app if the user is on this page!
@@ -53,27 +62,10 @@
 
     <div data-role="page" id="index-page">
 
-        <script type="text/javascript">
-
-            var user = {
-                username: "nribeka",
-                systemId: "99999-5",
-                givenName: "Nyoman",
-                middleName: "Winardi",
-                familyName: "Ribeka"
-            };
-
-            $(document).ready(function () {
-                $("#user").html(user.givenName + " " + user.middleName + " " + user.familyName);
-            });
-
-        </script>
-
         <div data-role="navbar">
             <ul>
                 <li><a href="index.html" rel="external" data-icon="home" class="ui-btn-active">Home</a></li>
-                <li><a href="profile.html" rel="external" data-icon="gear">My Profile</a></li>
-                <li><a href="search.html" rel="external" data-icon="search">Search Patient</a></li>
+                <li><a href="cohort.html" rel="external" data-icon="gear">Cohort</a></li>
             </ul>
         </div>
 
