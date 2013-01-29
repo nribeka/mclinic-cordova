@@ -15,7 +15,16 @@
  */
 package com.mclinic.plugin;
 
+import java.util.List;
+
+import android.util.Log;
+import com.mclinic.api.model.Cohort;
+import com.mclinic.api.model.Patient;
 import com.mclinic.api.service.AdministrativeService;
+import com.mclinic.api.service.CohortService;
+import com.mclinic.api.service.PatientService;
+import com.mclinic.json.CohortConverter;
+import com.mclinic.json.PatientConverter;
 import com.mclinic.search.api.Context;
 import com.mclinic.search.api.util.StringUtil;
 import org.apache.cordova.api.CallbackContext;
@@ -59,6 +68,15 @@ public class AdminPlugin extends MuzimaPlugin {
                 public void run() {
                     AdministrativeService service = Context.getInstance(AdministrativeService.class);
                     service.downloadCohorts();
+
+                    try {
+                        CohortConverter converter = new CohortConverter();
+                        CohortService cohortService = Context.getInstance(CohortService.class);
+                        List<Cohort> cohortList = cohortService.getAllCohorts();
+                        callbackContext.success(converter.serialize(cohortList));
+                    } catch (JSONException e) {
+                        Log.i(TAG, "Serializing cohorts failed!", e);
+                    }
                 }
             });
         } else if (StringUtil.equals(action, "downloadAllPatients")) {
@@ -69,6 +87,15 @@ public class AdminPlugin extends MuzimaPlugin {
                 public void run() {
                     AdministrativeService service = Context.getInstance(AdministrativeService.class);
                     service.downloadCohortPatients(cohortUuid);
+
+                    try {
+                        PatientConverter converter = new PatientConverter();
+                        PatientService patientService = Context.getInstance(PatientService.class);
+                        List<Patient> patientList = patientService.getAllPatients();
+                        callbackContext.success(converter.serialize(patientList));
+                    } catch (JSONException e) {
+                        Log.i(TAG, "Serializing cohorts failed!", e);
+                    }
                 }
             });
         } else if (StringUtil.equals(action, "downloadAllObservations")) {
