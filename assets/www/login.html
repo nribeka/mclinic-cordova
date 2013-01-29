@@ -30,6 +30,7 @@
 <script type="text/javascript" src="js/amplify.js"></script>
 <script type="text/javascript" src="js/jsrender.js"></script>
 <script type="text/javascript" src="js/cordova-2.2.0.js"></script>
+<script type="text/javascript" src="js/muzima.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript">
 
@@ -38,6 +39,38 @@
     function onDeviceReady() {
         // registering handler when user press the back button
         document.addEventListener("backbutton", onBackKeyDown, false);
+
+        var error = session.removeValue(ERROR_MESSAGE);
+        $("#error").html(error);
+
+        $("#login").click(function (event) {
+            var username = $("#username").attr("value");
+            var password = $("#password").attr("value");
+            var server = $("#server").attr("value");
+            $.mobile.loading("show");
+            userService.authenticate(username, password, server,
+                    function (data) {
+                        var username = $("#username").attr("value");
+                        session.putValue(SESSION_USERNAME, username);
+
+                        var password = $("#password").attr("value");
+                        session.putValue(SESSION_PASSWORD, password);
+
+                        var server = $("#server").attr("value");
+                        session.putValue(SESSION_SERVER, server);
+
+                        var login = $("#login");
+                        login.attr("href", "index.html");
+                        $.mobile.loading("hide");
+                    },
+                    function (code) {
+                        session.putValue(ERROR_MESSAGE, data);
+
+                        var login = $("#login");
+                        login.attr("href", "login.html");
+                        $.mobile.loading("hide");
+                    });
+        });
     }
     function onBackKeyDown(event) {
         // exit the app if the user is on this page!
@@ -54,17 +87,23 @@
 
         <div data-role="header">
             <h1>Login Page</h1>
-            <a href="index.html" rel="external" data-icon="check" data-theme="b" class="ui-btn-right">Validate</a>
+            <a rel="external" data-icon="check" data-theme="b" class="ui-btn-right" id="login">Validate</a>
         </div>
 
         <div data-role="content">
+            <span id="error"></span>
+
             <div data-role="fieldcontain">
                 <label for="username">Username:</label>
-                <input type="text" name="username" id="username" value=""/>
+                <input type="text" name="username" id="username"/>
             </div>
             <div data-role="fieldcontain">
                 <label for="password">Password:</label>
-                <input type="password" name="password" id="password" value=""/>
+                <input type="password" name="password" id="password"/>
+            </div>
+            <div data-role="fieldcontain">
+                <label for="server">Server:</label>
+                <input type="text" name="server" id="server" value="http://192.168.1.66:8082/openmrs-standalone"/>
             </div>
             <input type="reset" value="Reset" data-inline="true"/>
         </div>

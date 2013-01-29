@@ -36,7 +36,7 @@
 <script type="text/javascript" src="js/amplify.js"></script>
 <script type="text/javascript" src="js/jsrender.js"></script>
 <script type="text/javascript" src="js/cordova-2.2.0.js"></script>
-<script type="text/javascript" src="js/index.js"></script>
+<script type="text/javascript" src="js/muzima.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript">
 
@@ -84,30 +84,25 @@
 <div data-role="content">
     <div data-role="page" id="patient-page">
 
-        <div data-role="header">
+        <div data-role="header" class="nav-glyphish-example">
             <a href="search.html" rel="external" data-icon="arrow-l" data-theme="b" class="ui-btn-left">
                 Search Patient
             </a>
 
             <h1>Patient Information</h1>
+            <div data-role="navbar" class="nav-glyphish-example" data-grid="d">
+                <ul>
+                    <li><a href="#" id="favorite" data-icon="custom">Demographics</a></li>
+                    <li><a href="#" id="recent" data-icon="custom">Observations</a></li>
+                    <li><a href="#" id="contacts" data-icon="custom">Contacts</a></li>
+                    <li><a href="#" id="keypad" data-icon="custom">Forms</a></li>
+                    <li><a href="#" id="voicemail" data-icon="custom">Summary</a></li>
+                </ul>
+            </div>
         </div>
 
         <div data-role="content">
             <ul data-role="listview" data-inset="true" id="patient-placeholder"></ul>
-        </div>
-
-        <div data-role="footer" data-position="fixed">
-            <div data-role="navbar">
-                <ul>
-                    <li>
-                        <a href="patient.html" rel="external" data-icon="home" class="ui-btn-active ui-state-persist">
-                            Demographic
-                        </a>
-                    </li>
-                    <li><a href="obs.html" rel="external" data-icon="star">Observation</a></li>
-                    <li><a href="form.html" rel="external" data-icon="grid">Forms</a></li>
-                </ul>
-            </div>
         </div>
     </div>
 </div>
