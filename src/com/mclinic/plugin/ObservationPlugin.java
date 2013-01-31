@@ -27,6 +27,7 @@ import com.mclinic.search.api.util.StringUtil;
 import org.apache.cordova.api.CallbackContext;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ObservationPlugin extends MuzimaPlugin {
 
@@ -48,17 +49,21 @@ public class ObservationPlugin extends MuzimaPlugin {
      */
     @Override
     public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        // the first argument will always the session data
+        // we need to check session data to ensure that the user is actually logged in
+        JSONObject sessionData = args.getJSONObject(0);
+
         boolean valid = true;
         ObservationConverter converter = new ObservationConverter();
         PatientService patientService = Context.getInstance(PatientService.class);
         ObservationService observationService = Context.getInstance(ObservationService.class);
         if (StringUtil.equals(action, "getAllObservations")) {
-            String patientUuid = args.getString(0);
+            String patientUuid = args.getString(1);
             Patient patient = patientService.getPatientByUuid(patientUuid);
             List<Observation> observations = observationService.getAllObservations(patient);
             callbackContext.success(converter.serialize(observations));
         } else if (StringUtil.equals(action, "getObservationByUuid")) {
-            String uuid = args.getString(0);
+            String uuid = args.getString(1);
             Observation observation = observationService.getObservationByUuid(uuid);
             callbackContext.success(converter.serialize(observation));
         } else {

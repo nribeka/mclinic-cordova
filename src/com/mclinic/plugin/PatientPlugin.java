@@ -25,6 +25,7 @@ import com.mclinic.search.api.util.StringUtil;
 import org.apache.cordova.api.CallbackContext;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class PatientPlugin extends MuzimaPlugin {
 
@@ -46,6 +47,10 @@ public class PatientPlugin extends MuzimaPlugin {
      */
     @Override
     public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        // the first argument will always the session data
+        // we need to check session data to ensure that the user is actually logged in
+        JSONObject sessionData = args.getJSONObject(0);
+
         boolean valid = true;
         PatientConverter converter = new PatientConverter();
         PatientService patientService = Context.getInstance(PatientService.class);
@@ -53,15 +58,15 @@ public class PatientPlugin extends MuzimaPlugin {
             List<Patient> patients = patientService.getAllPatients();
             callbackContext.success(converter.serialize(patients));
         } else if (StringUtil.equals(action, "getPatientsByName")) {
-            String name = args.getString(0);
+            String name = args.getString(1);
             List<Patient> patients = patientService.getPatientsByName(name);
             callbackContext.success(converter.serialize(patients));
         } else if (StringUtil.equals(action, "getPatientByIdentifier")) {
-            String identifier = args.getString(0);
+            String identifier = args.getString(1);
             Patient patient = patientService.getPatientByIdentifier(identifier);
             callbackContext.success(converter.serialize(patient));
         } else if (StringUtil.equals(action, "getPatientByUuid")) {
-            String uuid = args.getString(0);
+            String uuid = args.getString(1);
             Patient patient = patientService.getPatientByUuid(uuid);
             callbackContext.success(converter.serialize(patient));
         } else {

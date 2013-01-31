@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+// global session data
+var sessionData = {};
 // currently logged in username
 var SESSION_USERNAME = "session.username";
 // randomly hashed password
@@ -22,45 +24,48 @@ var SESSION_PASSWORD = "session.password";
 var SESSION_SERVER = "session.url";
 // error message holder
 var ERROR_MESSAGE = "error.message";
-
+// currently loaded cohort uuid
 var COHORT_UUID = "cohort.uuid";
-
+// currently loaded patient uuid
 var PATIENT_UUID = "patient.uuid";
-
+// currently loaded form uuid
 var FORM_UUID = "form.uuid";
+// currently loaded observation uuid
+var OBS_UUID = "obs.uuid";
+// currently loaded observation concept
+var OBS_CONCEPT = "obs.concept";
 
 var session = (function ($) {
     var session = {};
-    var sessionInformation = {};
 
     var updateWindowName = function () {
-        window.name = JSON.stringify(sessionInformation);
+        window.name = JSON.stringify(sessionData);
     };
 
     var parseWindowName = function () {
         if (window.name.length)
-            sessionInformation = JSON.parse(window.name);
+            sessionData = JSON.parse(window.name);
     };
 
     session.putValue = function (name, value) {
         parseWindowName();
         if (typeof name !== "undefined" && name.length && typeof value !== "undefined") {
-            sessionInformation[name] = value;
+            sessionData[name] = value;
             updateWindowName();
         }
     };
 
     session.getValue = function (name) {
         parseWindowName();
-        return sessionInformation [name];
+        return sessionData [name];
     };
 
     session.removeValue = function (name) {
         parseWindowName();
         var value;
-        if (typeof name !== "undefined" && typeof sessionInformation [name] !== "undefined") {
-            value = sessionInformation [name];
-            delete sessionInformation [name];
+        if (typeof name !== "undefined" && typeof sessionData [name] !== "undefined") {
+            value = sessionData [name];
+            delete sessionData [name];
             updateWindowName();
         }
         return value;
@@ -87,19 +92,20 @@ var adminService = (function ($) {
     var service = {};
 
     service.downloadAllForms = function (successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "AdminPlugin", "downloadAllForms", []);
+
+        cordova.exec(success(successCallback), error(errorCallback), "AdminPlugin", "downloadAllForms", [sessionData]);
     };
 
     service.downloadAllCohorts = function (successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "AdminPlugin", "downloadAllCohorts", []);
+        cordova.exec(success(successCallback), error(errorCallback), "AdminPlugin", "downloadAllCohorts", [sessionData]);
     };
 
-    service.downloadAllPatients = function (cohortUuid, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "AdminPlugin", "downloadAllPatients", [cohortUuid]);
+    service.downloadPatientsForCohort = function (cohortUuid, successCallback, errorCallback) {
+        cordova.exec(success(successCallback), error(errorCallback), "AdminPlugin", "downloadAllPatients", [sessionData, cohortUuid]);
     };
 
-    service.downloadAllObservations = function (patientUuid, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "AdminPlugin", "downloadAllObservations", [patientUuid]);
+    service.downloadObservationsForPatient = function (patientUuid, successCallback, errorCallback) {
+        cordova.exec(success(successCallback), error(errorCallback), "AdminPlugin", "downloadAllObservations", [sessionData, patientUuid]);
     };
 
     return service;
@@ -109,11 +115,11 @@ var formService = (function ($) {
     var service = {};
 
     service.getAllForms = function (successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "FormPlugin", "getAllForms", []);
+        cordova.exec(success(successCallback), error(errorCallback), "FormPlugin", "getAllForms", [sessionData]);
     };
 
     service.getCohortByUuid = function (cohortUuid, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "FormPlugin", "getFormByUuid", [cohortUuid]);
+        cordova.exec(success(successCallback), error(errorCallback), "FormPlugin", "getFormByUuid", [sessionData, cohortUuid]);
     };
 
     return service;
@@ -123,15 +129,15 @@ var cohortService = (function ($) {
     var service = {};
 
     service.getAllCohorts = function (successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "CohortPlugin", "getAllCohorts", []);
+        cordova.exec(success(successCallback), error(errorCallback), "CohortPlugin", "getAllCohorts", [sessionData]);
     };
 
-    service.getCohortByName = function (partialName, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "CohortPlugin", "getCohortByName", [partialName]);
+    service.getCohortsByName = function (partialName, successCallback, errorCallback) {
+        cordova.exec(success(successCallback), error(errorCallback), "CohortPlugin", "getCohortByName", [sessionData, partialName]);
     };
 
     service.getCohortByUuid = function (cohortUuid, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "CohortPlugin", "getCohortByUuid", [cohortUuid]);
+        cordova.exec(success(successCallback), error(errorCallback), "CohortPlugin", "getCohortByUuid", [sessionData, cohortUuid]);
     };
 
     return service;
@@ -141,19 +147,19 @@ var patientService = (function ($) {
     var service = {};
 
     service.getAllPatients = function (successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getAllPatients", []);
+        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getAllPatients", [sessionData]);
     };
 
     service.getPatientsByName = function (partialName, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getPatientsByName", [partialName]);
+        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getPatientsByName", [sessionData, partialName]);
     };
 
     service.getPatientByIdentifier = function (identifier, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getPatientByIdentifier", [identifier]);
+        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getPatientByIdentifier", [sessionData, identifier]);
     };
 
     service.getPatientByUuid = function (patientUuid, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getPatientByUuid", [patientUuid]);
+        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getPatientByUuid", [sessionData, patientUuid]);
     };
 
     return service;
@@ -162,12 +168,16 @@ var patientService = (function ($) {
 var observationService = (function ($) {
     var service = {};
 
-    service.getAllObservations = function (patientUuid, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "ObservationPlugin", "getAllObservations", [patientUuid]);
+    service.getObservationsByPatient = function (patientUuid, successCallback, errorCallback) {
+        cordova.exec(success(successCallback), error(errorCallback), "ObservationPlugin", "getAllObservations", [sessionData, patientUuid]);
     };
 
-    service.getPatientByUuid = function (observationUuid, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getPatientByUuid", [observationUuid]);
+    service.getObservationsByConcept = function (patientUuid, successCallback, errorCallback) {
+        cordova.exec(success(successCallback), error(errorCallback), "ObservationPlugin", "getAllObservations", [sessionData, patientUuid]);
+    };
+
+    service.getObservationByUuid = function (observationUuid, successCallback, errorCallback) {
+        cordova.exec(success(successCallback), error(errorCallback), "PatientPlugin", "getPatientByUuid", [sessionData, observationUuid]);
     };
 
     return service;
@@ -177,11 +187,11 @@ var userService = (function ($) {
     var service = {};
 
     service.authenticate = function (username, password, url, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "UserPlugin", "authenticate", [username, password, url]);
+        cordova.exec(success(successCallback), error(errorCallback), "UserPlugin", "authenticate", [sessionData, username, password, url]);
     };
 
     service.getUserByUsername = function (username, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "UserPlugin", "getUserByUsername", [username]);
+        cordova.exec(success(successCallback), error(errorCallback), "UserPlugin", "getUserByUsername", [sessionData, username]);
     };
 
     return service;

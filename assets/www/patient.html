@@ -33,70 +33,61 @@
 <body>
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/jquery.mobile-1.2.0.js"></script>
-<script type="text/javascript" src="js/amplify.js"></script>
 <script type="text/javascript" src="js/jsrender.js"></script>
 <script type="text/javascript" src="js/cordova-2.2.0.js"></script>
 <script type="text/javascript" src="js/muzima.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript">
 
-    var person = [
-        {
-            systemId: "999KT-3",
-            givenName: "Testarius",
-            familyName: "Kungu",
-            middleName: "Paul",
-            gender: "M",
-            birth: "04/16/1984"
-        }
-    ];
-
-    function displayResults() {
-        var placeholder = $("#patient-placeholder");
-        placeholder.empty();
-
-        var template = $("#patient-data");
-        var data = template.render(person);
-
-        placeholder.html(data);
-        placeholder.listview("refresh");
-
-    }
-
-    $(document).ready(function () {
-        displayResults()
-    });
-
     // register for a device ready listener (cordova)
     document.addEventListener("deviceready", onDeviceReady, false);
     function onDeviceReady() {
         // registering handler when user press the back button
         document.addEventListener("backbutton", onBackKeyDown, false);
+
+        $.mobile.loading("show");
+        var patientUuid = session.getValue(PATIENT_UUID);
+        patientService.getPatientByUuid(patientUuid, function(data) {
+            displayResults(data);
+            $.mobile.loading("hide");
+        });
     }
+
     function onBackKeyDown(event) {
         // exit the app if the user is on this page!
         event.preventDefault();
         // call the exit app (cordova)
         navigator.app.exitApp();
     }
+
+    function displayResults(patient) {
+        var placeholder = $("#patient-placeholder");
+        placeholder.empty();
+
+        var template = $("#patient-data");
+        var data = template.render(patient);
+
+        placeholder.html(data);
+        placeholder.listview("refresh");
+    }
 </script>
 
 <div data-role="content">
     <div data-role="page" id="patient-page">
 
-        <div data-role="header" class="nav-glyphish-example">
-            <a href="search.html" rel="external" data-icon="arrow-l" data-theme="b" class="ui-btn-left">
+        <div data-role="header">
+            <a href="patients.html" rel="external" data-icon="arrow-l" data-theme="b" class="ui-btn-left">
                 Search Patient
             </a>
 
             <h1>Patient Information</h1>
-            <div data-role="navbar" class="nav-glyphish-example" data-grid="d">
+            <div data-role="navbar" data-grid="d">
                 <ul>
-                    <li><a href="#" id="favorite" data-icon="custom">Demographics</a></li>
-                    <li><a href="#" id="recent" data-icon="custom">Observations</a></li>
-                    <li><a href="#" id="contacts" data-icon="custom">Contacts</a></li>
-                    <li><a href="#" id="keypad" data-icon="custom">Forms</a></li>
-                    <li><a href="#" id="voicemail" data-icon="custom">Summary</a></li>
+                    <li><a href="patient.html" rel="external" id="demographic" data-icon="custom">Demographics</a></li>
+                    <li><a href="obs.html" rel="external" id="obs" data-icon="custom">Observations</a></li>
+                    <li><a href="#" rel="external" id="contacts" data-icon="custom">Contacts</a></li>
+                    <li><a href="#" rel="external" id="forms" data-icon="custom">Forms</a></li>
+                    <li><a href="#" rel="external" id="summary" data-icon="custom">Summary</a></li>
                 </ul>
             </div>
         </div>
@@ -119,15 +110,15 @@
     <li>
         <p>Name</p>
 
-        <h3>{{>givenName}} {{>middleName}} {{>familyName}}</h3>
+        <h3>{{>name}} </h3>
     </li>
     <li>
         <p>Identifier</p>
-        <h4>{{>systemId}}</h4>
+        <h4>{{>identifier}}</h4>
     </li>
     <li>
         <p>Date of Birth</p>
-        <h4>{{>birth}}</h4>
+        <h4>{{>birthdate}}</h4>
     </li>
 </script>
 </body>

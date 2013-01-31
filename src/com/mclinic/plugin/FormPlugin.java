@@ -28,6 +28,7 @@ import com.mclinic.search.api.util.StringUtil;
 import org.apache.cordova.api.CallbackContext;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class FormPlugin extends MuzimaPlugin {
 
@@ -49,6 +50,10 @@ public class FormPlugin extends MuzimaPlugin {
      */
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        // the first argument will always the session data
+        // we need to check session data to ensure that the user is actually logged in
+        JSONObject sessionData = args.getJSONObject(0);
+
         boolean valid = true;
         FormConverter converter = new FormConverter();
         FormService formService = Context.getInstance(FormService.class);
@@ -56,7 +61,7 @@ public class FormPlugin extends MuzimaPlugin {
             List<Form> forms = formService.getAllForms();
             callbackContext.success(converter.serialize(forms));
         } else if (StringUtil.equals(action, "getCohortByUuid")) {
-            String uuid = args.getString(0);
+            String uuid = args.getString(1);
             Form form = formService.getFormByUuid(uuid);
             callbackContext.success(converter.serialize(form ));
         } else {
