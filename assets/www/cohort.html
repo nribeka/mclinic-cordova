@@ -33,7 +33,6 @@
 <body>
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/jquery.mobile-1.2.0.js"></script>
-<script type="text/javascript" src="js/amplify.js"></script>
 <script type="text/javascript" src="js/jsrender.js"></script>
 <script type="text/javascript" src="js/cordova-2.2.0.js"></script>
 <script type="text/javascript" src="js/muzima.js"></script>
@@ -63,6 +62,8 @@
                         $.mobile.loading("hide");
                     });
         });
+
+        $("#refresh").trigger("click");
     }
 
     function renderResults(results) {
@@ -76,8 +77,8 @@
         cohort.listview("refresh");
     }
 
-    function save(uuid) {
-        alert("assigning uuid: " + uuid);
+    function save(anchor) {
+        var uuid = $(anchor).attr("uuid");
         session.putValue(COHORT_UUID, uuid);
     }
 
@@ -103,7 +104,8 @@
         <div data-role="content">
             <ul data-role="listview" data-inset="true" id="cohorts-placeholder"></ul>
         </div>
-        <div data-role="footer" class="ui-bar">
+
+        <div data-role="footer" class="ui-bar" data-position="fixed">
             <a href="#" data-role="button" data-icon="arrow-d" id="download">Download</a>
             <a href="#" data-role="button" data-icon="refresh" id="refresh">Refresh</a>
         </div>
@@ -112,7 +114,7 @@
 
 <script id="cohort-data" type="text/x-jsrender">
     <li data-messageId="{{>uuid}}">
-        <h4><a href="search.html" rel="external" onclick="save({{>uuid}});">{{>name}}</a></h4>
+        <h4><a href="patients.html" rel="external" onclick="save(this);" uuid="{{>uuid}}">{{>name}}</a></h4>
     </li>
 </script>
 

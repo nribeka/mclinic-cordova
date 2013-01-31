@@ -27,8 +27,6 @@
 <body>
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/jquery.mobile-1.2.0.js"></script>
-<script type="text/javascript" src="js/amplify.js"></script>
-<script type="text/javascript" src="js/jsrender.js"></script>
 <script type="text/javascript" src="js/cordova-2.2.0.js"></script>
 <script type="text/javascript" src="js/muzima.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
@@ -43,11 +41,12 @@
         var error = session.removeValue(ERROR_MESSAGE);
         $("#error").html(error);
 
-        $("#login").click(function (event) {
+        $("#login").click(function () {
+            $.mobile.loading('show');
+
             var username = $("#username").attr("value");
             var password = $("#password").attr("value");
             var server = $("#server").attr("value");
-            $.mobile.loading("show");
             userService.authenticate(username, password, server,
                     function (data) {
                         var username = $("#username").attr("value");
@@ -63,7 +62,7 @@
                         login.attr("href", "index.html");
                         $.mobile.loading("hide");
                     },
-                    function (code) {
+                    function (data) {
                         session.putValue(ERROR_MESSAGE, data);
 
                         var login = $("#login");
@@ -72,6 +71,7 @@
                     });
         });
     }
+
     function onBackKeyDown(event) {
         // exit the app if the user is on this page!
         event.preventDefault();
@@ -103,7 +103,7 @@
             </div>
             <div data-role="fieldcontain">
                 <label for="server">Server:</label>
-                <input type="text" name="server" id="server" value="http://192.168.1.66:8082/openmrs-standalone"/>
+                <input type="text" name="server" id="server" value="http://192.168.1.66:8081/openmrs-standalone"/>
             </div>
             <input type="reset" value="Reset" data-inline="true"/>
         </div>

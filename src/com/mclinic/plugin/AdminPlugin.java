@@ -19,17 +19,21 @@ import java.util.List;
 
 import android.util.Log;
 import com.mclinic.api.model.Cohort;
+import com.mclinic.api.model.Observation;
 import com.mclinic.api.model.Patient;
 import com.mclinic.api.service.AdministrativeService;
 import com.mclinic.api.service.CohortService;
+import com.mclinic.api.service.ObservationService;
 import com.mclinic.api.service.PatientService;
 import com.mclinic.json.CohortConverter;
+import com.mclinic.json.ObservationConverter;
 import com.mclinic.json.PatientConverter;
 import com.mclinic.search.api.Context;
 import com.mclinic.search.api.util.StringUtil;
 import org.apache.cordova.api.CallbackContext;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class AdminPlugin extends MuzimaPlugin {
 
@@ -51,6 +55,10 @@ public class AdminPlugin extends MuzimaPlugin {
      */
     @Override
     public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        // the first argument will always the session data
+        // we need to check session data to ensure that the user is actually logged in
+        JSONObject sessionData = args.getJSONObject(0);
+
         boolean valid = true;
         if (StringUtil.equals(action, "downloadAllForms")) {
             cordova.getThreadPool().execute(new Runnable() {
@@ -75,12 +83,13 @@ public class AdminPlugin extends MuzimaPlugin {
                         List<Cohort> cohortList = cohortService.getAllCohorts();
                         callbackContext.success(converter.serialize(cohortList));
                     } catch (JSONException e) {
+                        callbackContext.error("Serializing patients failed!");
                         Log.i(TAG, "Serializing cohorts failed!", e);
                     }
                 }
             });
         } else if (StringUtil.equals(action, "downloadAllPatients")) {
-            final String cohortUuid = args.getString(0);
+            final String cohortUuid = args.getString(1);
             cordova.getThreadPool().execute(new Runnable() {
 
                 @Override
@@ -94,18 +103,32 @@ public class AdminPlugin extends MuzimaPlugin {
                         List<Patient> patientList = patientService.getAllPatients();
                         callbackContext.success(converter.serialize(patientList));
                     } catch (JSONException e) {
-                        Log.i(TAG, "Serializing cohorts failed!", e);
+                        callbackContext.error("Serializing patients failed!");
+                        Log.i(TAG, "Serializing patients failed!", e);
                     }
                 }
             });
         } else if (StringUtil.equals(action, "downloadAllObservations")) {
-            final String patientUuid = args.getString(0);
+            final String patientUuid = args.getString(1);
             cordova.getThreadPool().execute(new Runnable() {
 
                 @Override
                 public void run() {
                     AdministrativeService service = Context.getInstance(AdministrativeService.class);
                     service.downloadObservations(patientUuid);
+
+                    try {
+                        ObservationConverter converter = new ObservationConverter ();
+                        PatientService patientService = Context.getInstance(PatientService.class);
+                        ObservationService observationService = Context.getInstance(ObservationService.class);
+
+                        Patient patient = patientService.getPatientByUuid(patientUuid);
+                        List<Observation> observationList = observationService.getAllObservations(patient);
+                        callbackContext.success(converter.serialize(observationList));
+                    } catch (JSONException e) {
+                        callbackContext.error("Serializing observations failed!");
+                        Log.i(TAG, "Serializing observations failed!", e);
+                    }
                 }
             });
         } else {

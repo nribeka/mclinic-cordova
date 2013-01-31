@@ -15,6 +15,8 @@
  */
 package com.mclinic.json;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import com.mclinic.api.model.Patient;
@@ -25,12 +27,15 @@ import org.json.JSONObject;
 public class PatientConverter {
 
     public JSONObject serialize(final Patient patient) throws JSONException {
+        String dateFormat = "dd-MMM-yyyy";
+        DateFormat format = new SimpleDateFormat(dateFormat);
+
         JSONObject object = new JSONObject();
         object.put("uuid", patient.getUuid());
         object.put("name", patient.getName());
         object.put("identifier", patient.getIdentifier());
         object.put("gender", patient.getGender());
-        object.put("birthdate", patient.getBirthdate());
+        object.put("birthdate", format.format(patient.getBirthdate()));
         return object;
     }
 

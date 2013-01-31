@@ -17,7 +17,7 @@ package com.mclinic.util;
 
 import android.os.Environment;
 
-public class FileUtil {
+public class FileUtils {
 
     public static boolean storageReady() {
         String cardstatus = Environment.getExternalStorageState();

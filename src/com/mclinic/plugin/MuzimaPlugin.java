@@ -25,9 +25,8 @@ import com.mclinic.api.service.UserService;
 import com.mclinic.search.api.Context;
 import com.mclinic.search.api.util.StringUtil;
 import com.mclinic.util.DigestUtils;
-import com.mclinic.util.FileUtil;
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.api.CordovaInterface;
+import com.mclinic.util.FileUtils;
+import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
 
 public abstract class MuzimaPlugin extends CordovaPlugin {
@@ -40,42 +39,46 @@ public abstract class MuzimaPlugin extends CordovaPlugin {
 
     private final String TAG = MuzimaPlugin.class.getSimpleName();
 
-    protected Boolean initialized = Boolean.FALSE;
+    protected void initialize(final String server,
+                              final String username,
+                              final String password,
+                              final CallbackContext callbackContext) {
 
-    protected void initialize(final String server, final String username, final String password) {
-        if (!initialized) {
-            Log.i(TAG, "Initializing internal structure of the plugins.");
-            if (FileUtil.storageReady()) {
-                MuzimaModule muzimaModule = new MuzimaModule(lucenePath, defaultKey);
-                muzimaModule.setServer(server);
-                muzimaModule.setUsername(username);
-                muzimaModule.setPassword(password);
-                Context.initialize(muzimaModule);
+        Log.i(TAG, "Initializing internal structure of the plugins.");
+        if (FileUtils.storageReady()) {
+            MuzimaModule muzimaModule = new MuzimaModule(lucenePath, defaultKey);
+            muzimaModule.setServer(server);
+            muzimaModule.setUsername(username);
+            muzimaModule.setPassword(password);
+            Context.initialize(muzimaModule);
 
-                AdministrativeService administrativeService = Context.getInstance(AdministrativeService.class);
-                administrativeService.initializeRepository(configurationPath);
-                Log.i(TAG, "Internal structure of plugins is initialized.");
-                // initialize with the current user
-                // TODO: need to make sure the timeout is short when performing any download this!
-                administrativeService.downloadUsers(username);
-                // validate the user
-                UserService userService = Context.getInstance(UserService.class);
-                User user = userService.getUserByUsername(username);
-                if (user != null) {
-                    if (StringUtil.isEmpty(user.getSalt()) && StringUtil.isEmpty(user.getPassword())) {
-                        String salt = UUID.randomUUID().toString();
-                        String hashedPassword = DigestUtils.generateChecksum(password + ":" + salt);
-                        user.setSalt(salt);
-                        user.setPassword(hashedPassword);
-                        userService.updateUser(user);
-                        initialized = Boolean.TRUE;
-                    } else {
-                        String hashedPassword = DigestUtils.generateChecksum(password + ":" + user.getSalt());
-                        if (StringUtil.equals(hashedPassword, user.getPassword()))
-                            initialized = Boolean.TRUE;
-                        userService.deleteUser(user);
-                    }
+            AdministrativeService administrativeService = Context.getInstance(AdministrativeService.class);
+            administrativeService.initializeRepository(configurationPath);
+            Log.i(TAG, "Internal structure of plugins is initialized.");
+            // initialize with the current user
+            // TODO: need to make sure the timeout is short when performing any download this!
+            administrativeService.downloadUsers(username);
+            // validate the user
+            UserService userService = Context.getInstance(UserService.class);
+            User user = userService.getUserByUsername(username);
+            if (user != null) {
+                if (StringUtil.isEmpty(user.getSalt()) && StringUtil.isEmpty(user.getPassword())) {
+                    String salt = UUID.randomUUID().toString();
+                    String hashedPassword = DigestUtils.generateChecksum(password + ":" + salt);
+                    user.setSalt(salt);
+                    user.setPassword(hashedPassword);
+                    userService.updateUser(user);
+                    callbackContext.success(hashedPassword);
+                } else {
+                    String hashedPassword = DigestUtils.generateChecksum(password + ":" + user.getSalt());
+                    if (StringUtil.equals(hashedPassword, user.getPassword()))
+                        callbackContext.success(hashedPassword);
+                    else
+                        callbackContext.error("User is not authorized to access this app!");
+                    userService.deleteUser(user);
                 }
+            } else {
+                callbackContext.error("User is not authorized to access this app!");
             }
         }
     }

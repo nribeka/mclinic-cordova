@@ -25,6 +25,7 @@ import com.mclinic.search.api.util.StringUtil;
 import org.apache.cordova.api.CallbackContext;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class CohortPlugin extends MuzimaPlugin {
 
@@ -46,6 +47,10 @@ public class CohortPlugin extends MuzimaPlugin {
      */
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        // the first argument will always the session data
+        // we need to check session data to ensure that the user is actually logged in
+        JSONObject sessionData = args.getJSONObject(0);
+
         boolean valid = true;
         CohortConverter converter = new CohortConverter();
         CohortService cohortService = Context.getInstance(CohortService.class);
@@ -53,11 +58,11 @@ public class CohortPlugin extends MuzimaPlugin {
             List<Cohort> cohorts = cohortService.getAllCohorts();
             callbackContext.success(converter.serialize(cohorts));
         } else if (StringUtil.equals(action, "getCohortsByName")) {
-            String name = args.getString(0);
+            String name = args.getString(1);
             List<Cohort> cohorts = cohortService.getCohortsByName(name);
             callbackContext.success(converter.serialize(cohorts));
         } else if (StringUtil.equals(action, "getCohortByUuid")) {
-            String uuid = args.getString(0);
+            String uuid = args.getString(1);
             Cohort cohort = cohortService.getCohortByUuid(uuid);
             callbackContext.success(converter.serialize(cohort));
         } else {
