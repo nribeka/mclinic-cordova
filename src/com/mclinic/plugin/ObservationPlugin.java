@@ -66,6 +66,12 @@ public class ObservationPlugin extends MuzimaPlugin {
             String uuid = args.getString(1);
             Observation observation = observationService.getObservationByUuid(uuid);
             callbackContext.success(converter.serialize(observation));
+        } else if (StringUtil.equals(action, "searchObservation")) {
+            String patientUuid = args.getString(1);
+            Patient patient = patientService.getPatientByUuid(patientUuid);
+            String term = args.getString(2);
+            List<Observation> observations = observationService.searchObservations(patient, term);
+            callbackContext.success(converter.serialize(observations));
         } else {
             return super.execute(action, args, callbackContext);
         }

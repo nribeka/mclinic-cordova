@@ -22,23 +22,59 @@
           content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi"/>
     <link rel="stylesheet" type="text/css" href="css/index.css"/>
     <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.2.0.css"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="css/spectrum.css"/>
     <title>Hello World</title>
 </head>
 <body>
 <script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/underscore.js"></script>
+<script type="text/javascript" src="js/jsonform.js"></script>
 <script type="text/javascript" src="js/jquery.mobile-1.2.0.js"></script>
-<script type="text/javascript" src="js/amplify.js"></script>
 <script type="text/javascript" src="js/jsrender.js"></script>
 <script type="text/javascript" src="js/cordova-2.2.0.js"></script>
 <script type="text/javascript" src="js/muzima.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript">
 
+    var form = {
+        "schema": {
+            "message": {
+                "type": "string",
+                "title": "Example Form Generated From JSON Data"
+            },
+            "author": {
+                "type": "object",
+                "title": "Author",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "gender": {
+                        "type": "string",
+                        "title": "Gender",
+                        "enum": [ "male", "female", "alien" ]
+                    },
+                    "magic": {
+                        "type": "integer",
+                        "title": "Magic number",
+                        "default": 42
+                    }
+                }
+            }
+        },
+        "onSubmit": function(errors, values) {
+            alert('Form submitted. Values object:\n' + JSON.stringify(values, null, 2));
+        }
+    };
+
     // register for a device ready listener (cordova)
     document.addEventListener("deviceready", onDeviceReady, false);
     function onDeviceReady() {
         // registering handler when user press the back button
         document.addEventListener("backbutton", onBackKeyDown, false);
+        $('form').jsonForm(form);
     }
     function onBackKeyDown(event) {
         // exit the app if the user is on this page!
@@ -49,7 +85,7 @@
 </script>
 
 <div data-role="content">
-    <div data-role="page" id="patient-page">
+    <div data-role="page" id="form-page">
 
         <div data-role="header">
             <a href="patients.html" rel="external" data-icon="arrow-l" data-theme="b" class="ui-btn-left">
@@ -57,26 +93,24 @@
             </a>
 
             <h1>Patient Information</h1>
+            <div data-role="navbar" data-grid="d">
+                <ul>
+                    <li><a href="patient.html" rel="external" id="demographic" data-icon="custom">Demographics</a></li>
+                    <li><a href="obs.html" rel="external" id="obs" data-icon="custom">Observations</a></li>
+                    <li><a href="#" rel="external" id="contacts" data-icon="custom">Contacts</a></li>
+                    <li><a href="form.html" rel="external" id="forms" data-icon="custom">Forms</a></li>
+                    <li><a href="#" rel="external" id="summary" data-icon="custom">Summary</a></li>
+                </ul>
+            </div>
         </div>
 
         <div data-role="content">
-            Forms information goes here.
-        </div>
-
-        <div data-role="footer" data-position="fixed">
-            <div data-role="navbar">
-                <ul>
-                    <li><a href="patient.html" rel="external" data-icon="home">Demographic</a></li>
-                    <li><a href="obs.html" rel="external" data-icon="star">Observation</a></li>
-                    <li>
-                        <a href="form.html" rel="external" data-icon="grid" class="ui-btn-active ui-state-persist">
-                            Forms
-                        </a>
-                    </li>
-                </ul>
+            <div id="form">
+                <form></form>
             </div>
         </div>
     </div>
 </div>
+
 </body>
 </html>
