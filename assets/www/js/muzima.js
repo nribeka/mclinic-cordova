@@ -118,8 +118,8 @@ var formService = (function ($) {
         cordova.exec(success(successCallback), error(errorCallback), "FormPlugin", "getAllForms", [sessionData]);
     };
 
-    service.getCohortByUuid = function (cohortUuid, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "FormPlugin", "getFormByUuid", [sessionData, cohortUuid]);
+    service.getFormByUuid = function (formUuid, successCallback, errorCallback) {
+        cordova.exec(success(successCallback), error(errorCallback), "FormPlugin", "getFormByUuid", [sessionData, formUuid]);
     };
 
     return service;
@@ -168,12 +168,12 @@ var patientService = (function ($) {
 var observationService = (function ($) {
     var service = {};
 
-    service.getObservationsByPatient = function (patientUuid, successCallback, errorCallback) {
+    service.getObservationsForPatient = function (patientUuid, successCallback, errorCallback) {
         cordova.exec(success(successCallback), error(errorCallback), "ObservationPlugin", "getAllObservations", [sessionData, patientUuid]);
     };
 
-    service.getObservationsByConcept = function (patientUuid, successCallback, errorCallback) {
-        cordova.exec(success(successCallback), error(errorCallback), "ObservationPlugin", "getAllObservations", [sessionData, patientUuid]);
+    service.searchObservationsForPatient = function (patientUuid, term, successCallback, errorCallback) {
+        cordova.exec(success(successCallback), error(errorCallback), "ObservationPlugin", "getAllObservations", [sessionData, patientUuid, term]);
     };
 
     service.getObservationByUuid = function (observationUuid, successCallback, errorCallback) {

@@ -51,14 +51,12 @@
         $("#refresh").click(function () {
             $.mobile.loading("show");
             var patientUuid = session.getValue(PATIENT_UUID);
-            observationService.getObservationsByPatient(patientUuid,
+            observationService.getObservationsForPatient(patientUuid,
                     function success(results) {
                         renderResults(results);
                         $.mobile.loading("hide");
                     });
-        });
-
-        $("#refresh").trigger("click");
+        }).trigger("click");
     }
 
     function renderResults(results) {
@@ -82,7 +80,7 @@
 </script>
 
 <div data-role="content">
-    <div data-role="page" id="patient-page">
+    <div data-role="page" id="obs-page">
 
         <div data-role="header">
             <a href="patients.html" rel="external" data-icon="arrow-l" data-theme="b" class="ui-btn-left">
@@ -96,7 +94,7 @@
                     <li><a href="patient.html" rel="external" id="demographic" data-icon="custom">Demographics</a></li>
                     <li><a href="obs.html" rel="external" id="obs" data-icon="custom">Observations</a></li>
                     <li><a href="#" rel="external" id="contacts" data-icon="custom">Contacts</a></li>
-                    <li><a href="#" rel="external" id="forms" data-icon="custom">Forms</a></li>
+                    <li><a href="form.html" rel="external" id="forms" data-icon="custom">Forms</a></li>
                     <li><a href="#" rel="external" id="summary" data-icon="custom">Summary</a></li>
                 </ul>
             </div>

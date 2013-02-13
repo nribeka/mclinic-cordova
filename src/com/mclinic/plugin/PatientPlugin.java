@@ -69,6 +69,10 @@ public class PatientPlugin extends MuzimaPlugin {
             String uuid = args.getString(1);
             Patient patient = patientService.getPatientByUuid(uuid);
             callbackContext.success(converter.serialize(patient));
+        } else if (StringUtil.equals(action, "searchPatients")) {
+            String term = args.getString(1);
+            List<Patient> patients = patientService.searchPatients(term);
+            callbackContext.success(converter.serialize(patients));
         } else {
             return super.execute(action, args, callbackContext);
         }
